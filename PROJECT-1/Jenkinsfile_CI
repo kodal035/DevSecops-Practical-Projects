@@ -18,7 +18,7 @@ pipeline {
 
         stage('Frontend Compilation') {
             steps {
-                dir('client') {
+                dir('PROJECT-1/client') {
                     sh 'find . -name "*.js" -exec node --check {} +'
                 }
             }

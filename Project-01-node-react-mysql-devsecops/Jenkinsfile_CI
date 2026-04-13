@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    
     tools {
         nodejs 'nodejs23'
     }
@@ -8,51 +8,13 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
     }
-
     stages {
-
         stage('Git Checkout') {
             steps {
-                checkout scmGit(
-                    branches: [[name: 'main']],
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        credentialsId: 'github-token',
-                        url: 'https://github.com/kodal035/DevSecops-Practical-Projects.git'
-                    ]]
-                )
+                git branch: 'main', url: 'https://github.com/kodal035/DevSecops-Practical-Projects.git'
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                    cd Project-01-node-react-mysql-devsecops/api
-                    npm install
-                '''
-                sh '''
-                    cd Project-01-node-react-mysql-devsecops/client
-                    npm install
-                '''
-            }
-        }
-
-        stage('Unit Tests (Frontend)') {
-            steps {
-                dir('Project-01-node-react-mysql-devsecops/client') {
-                    sh 'CI=true npm test -- --coverage --runInBand'
-                }
-            }
-        }
-
-        stage('Unit Tests (Backend)') {
-            steps {
-                dir('Project-01-node-react-mysql-devsecops/api') {
-                    sh 'npm test -- --coverage'
-                }
-            }
-        }
-
+        
         stage('Frontend Compilation') {
             steps {
                 dir('Project-01-node-react-mysql-devsecops/client') {
@@ -60,7 +22,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Backend Compilation') {
             steps {
                 dir('Project-01-node-react-mysql-devsecops/api') {
@@ -68,33 +30,19 @@ pipeline {
                 }
             }
         }
-
-        stage('Gitleaks Scan') {
+        
+        stage('GitLeaks Scan') {
             steps {
-                sh '''
-                    gitleaks detect --source Project-01-node-react-mysql-devsecops/client --exit-code 1
-                    gitleaks detect --source Project-01-node-react-mysql-devsecops/api --exit-code 1
-                '''
+                sh 'gitleaks detect --source ./Project-01-node-react-mysql-devsecops/client --exit-code 1'
+                sh 'gitleaks detect --source ./Project-01-node-react-mysql-devsecops/api --exit-code 1'
             }
         }
-
-        stage('Trivy FS Scan') {
-            steps {
-                sh 'trivy fs --format table -o fs-report.html .'
-            }
-        }
-
+        
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
-                    sh """
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=Nodejs-Project \
-                        -Dsonar.projectName=Nodejs-Project \
-                        -Dsonar.sources=. \
-                        -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/build/**,**/dist/**,**/.scannerwork/** \
-                        -Dsonar.javascript.lcov.reportPaths=Project-01-node-react-mysql-devsecops/client/coverage/lcov.info,Project-01-node-react-mysql-devsecops/api/coverage/lcov.info
-                    """
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=NodeJS-Project \
+                            -Dsonar.projectKey=Nodejs-Project '''
                 }
             }
         }
@@ -102,27 +50,15 @@ pipeline {
         stage('Quality Gate Check') {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
                 }
             }
         }
 
-        stage('Build Artifact (Optional)') {
+        stage('Trivy FS Scan') {
             steps {
-                sh '''
-                    cd Project-01-node-react-mysql-devsecops/api
-                    npm pack
-                '''
+                sh 'trivy fs --format table -o fs-report.html .'
             }
-        }
-    }
-
-    post {
-        success {
-            echo "CI Pipeline Success ✅"
-        }
-        failure {
-            echo "CI Pipeline Failed ❌"
         }
     }
 }

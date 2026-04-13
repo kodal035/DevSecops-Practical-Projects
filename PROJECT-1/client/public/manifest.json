@@ -1,6 +1,6 @@
 {
-  "short_name": "DevOpsShack",
-  "name": "DevOps Shack Dashboard",
+  "short_name": "DevSecops-Project",
+  "name": "DevSecops-Project Dashboard",
   "icons": [
     {
       "src": "favicon.ico",

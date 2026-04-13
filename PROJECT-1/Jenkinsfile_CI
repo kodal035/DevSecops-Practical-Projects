@@ -26,7 +26,7 @@ pipeline {
 
         stage('Backend Compilation') {
             steps {
-                dir('api') {
+                dir('PROJECT-1/api') {
                     sh 'find . -name "*.js" -exec node --check {} +'
                 }
             }
@@ -34,8 +34,8 @@ pipeline {
 
         stage('Gitleaks Scan') {
             steps {
-                sh 'gitleaks detect --source ./client --exit-code 1'
-                sh 'gitleaks detect --source ./api --exit-code 1'
+                sh 'gitleaks detect --source ./PROJECT-1/client --exit-code 1'
+                sh 'gitleaks detect --source ./PROJECT-1/api --exit-code 1'
             }
         }
 
@@ -59,6 +59,32 @@ pipeline {
         stage('Trivy FS Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    cd PROJECT-1/api
+                    npm install
+                '''
+                sh '''
+                    cd PROJECT-1/client
+                    npm install
+                '''
+            }
+        }
+
+        stage('Run Application') {
+            steps {
+                sh '''
+                    cd PROJECT-1/api
+                    nohup npm start > api.log 2>&1 &
+                '''
+                sh '''
+                    cd PROJECT-1/client
+                    nohup npm start > client.log 2>&1 &
+                '''
             }
         }
     }

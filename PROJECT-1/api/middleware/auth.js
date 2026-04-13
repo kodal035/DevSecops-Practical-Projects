@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const SECRET = process.env.JWT_SECRET;
+
+if (!SECRET) {
+  throw new Error('JWT_SECRET is not set. Configure it in the environment before starting the API.');
+}
 
 // ✅ Middleware to verify JWT token
 const verifyToken = (req, res, next) => {

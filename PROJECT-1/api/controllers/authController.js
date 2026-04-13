@@ -3,7 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const util = require('util');
 
-const SECRET = process.env.JWT_SECRET || 'supersecret'; // ideally from .env
+const SECRET = process.env.JWT_SECRET;
+
+if (!SECRET) {
+  throw new Error('JWT_SECRET is not set. Configure it in the environment before starting the API.');
+}
 
 // Promisify DB query
 const query = util.promisify(db.query).bind(db);

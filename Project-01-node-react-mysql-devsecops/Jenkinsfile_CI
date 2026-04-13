@@ -37,18 +37,18 @@ pipeline {
             }
         }
 
-        stage('Unit Tests') {
+        stage('Unit Tests (Frontend)') {
             steps {
                 dir('Project-01-node-react-mysql-devsecops/client') {
-                    sh 'CI=true npm test -- --runInBand'
+                    sh 'CI=true npm test -- --coverage --runInBand'
                 }
             }
         }
 
-        stage('Backend Unit Tests') {
+        stage('Unit Tests (Backend)') {
             steps {
                 dir('Project-01-node-react-mysql-devsecops/api') {
-                    sh 'npm test'
+                    sh 'npm test -- --coverage'
                 }
             }
         }
@@ -91,7 +91,9 @@ pipeline {
                         $SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectKey=Nodejs-Project \
                         -Dsonar.projectName=Nodejs-Project \
-                        -Dsonar.sources=.
+                        -Dsonar.sources=. \
+                        -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/build/**,**/dist/**,**/.scannerwork/** \
+                        -Dsonar.javascript.lcov.reportPaths=Project-01-node-react-mysql-devsecops/client/coverage/lcov.info,Project-01-node-react-mysql-devsecops/api/coverage/lcov.info
                     """
                 }
             }

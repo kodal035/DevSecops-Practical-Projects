@@ -143,11 +143,17 @@ Key DB objects:
 
 Project screenshots are under `pictures/`.
 
-Examples:
+### Main Page
 
-- `pictures/main_page.png`
-- `pictures/screencapture-localhost-8080-job-pipe1-2026-04-13-21_06_55.png`
-- `pictures/screencapture-localhost-9000-dashboard-2026-04-14-00_48_09.png`
+![Main Page](pictures/main_page.png)
+
+### Jenkins Pipeline
+
+![Jenkins Pipeline](pictures/screencapture-localhost-8080-job-pipe1-2026-04-13-21_06_55.png)
+
+### SonarQube Dashboard
+
+![SonarQube Dashboard](pictures/screencapture-localhost-9000-dashboard-2026-04-14-00_48_09.png)
 
 ## Notes
 

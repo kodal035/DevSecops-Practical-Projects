@@ -369,14 +369,16 @@ Follow the steps in `mysql-setup.md` to:
 ```bash
 sudo apt update
 sudo apt install mysql-server -y
-sudo mysql -u root -p
+sudo mysql -u root -p   ### password=Aditya
 ```
 
 Inside MySQL, you can prepare the project database like this:
 
 ```sql
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'YourPasswordHere';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Aditya';
 FLUSH PRIVILEGES;
+EXIT;
+
 
 CREATE DATABASE IF NOT EXISTS crud_app;
 USE crud_app;

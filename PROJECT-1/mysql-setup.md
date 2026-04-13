@@ -2,7 +2,7 @@
 
 sudo apt install mysql-server -y
 
-sudo mysql -u root -p
+sudo mysql -u root -p # password= 
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'KODAL035';
 FLUSH PRIVILEGES;

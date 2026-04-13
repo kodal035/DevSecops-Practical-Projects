@@ -1,16 +1,19 @@
 # Project 01: Node + React + MySQL DevSecOps
 
-This project is a practical DevSecOps learning example built with:
+This project is a hands-on DevSecOps learning example.
+Its goal is to show a real CI workflow where source code is checked, analyzed, and scanned for security risks.
+
+Tech stack:
 
 - Node.js API (`api`)
 - React client (`client`)
-- MySQL database
-- Jenkins CI pipeline
-- SonarQube code analysis
-- Gitleaks secret scan
-- Trivy filesystem scan
+- MySQL
+- Jenkins
+- SonarQube
+- Gitleaks
+- Trivy
 
-## Current Repository Structure
+## Repository Structure
 
 ```text
 Project-01-node-react-mysql-devsecops/
@@ -22,69 +25,108 @@ Project-01-node-react-mysql-devsecops/
 └── pictures/
 ```
 
-## Prerequisites
+## 1. Installation Order (Do This in Sequence)
 
-- Ubuntu or WSL2 Ubuntu
-- Git
-- Node.js (18+ recommended)
-- npm
-- MySQL Server
-- Docker (for Jenkins and SonarQube)
+1. Ubuntu or WSL2 Ubuntu
+2. Git
+3. Docker
+4. Node.js (18+ recommended)
+5. npm
+6. MySQL Server
 
-Optional local tools if you run outside Jenkins:
+Note: The Jenkins agent environment must include all tools used in the pipeline (SonarScanner, Gitleaks, Trivy).
 
-- SonarScanner
-- Gitleaks
-- Trivy
-
-## Quick Start
-
-1. Clone repository.
-2. Configure MySQL using `mysql-setup.md`.
-3. Install backend dependencies.
-4. Install frontend dependencies.
-5. Start backend and frontend.
+## 2. Clone the Project
 
 ```bash
-# from project root
-cd api
-npm install
-npm start
+git clone https://github.com/kodal035/DevSecops-Practical-Projects.git
+cd DevSecops-Practical-Projects
 ```
+
+## 3. MySQL Preparation
+
+Follow the steps in `mysql-setup.md`.
+
+Expected database objects:
+
+- Database: `crud_app`
+- Table: `users`
+
+## 4. Start Jenkins and SonarQube (Docker)
+
+### 4.1 Start Jenkins
 
 ```bash
-# new terminal
-cd client
-npm install
-npm start
+docker volume create jenkins_home
+docker network create devsecops-net
+
+docker run -d \
+  --name jenkins \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  --network devsecops-net \
+  jenkins/jenkins:lts-jdk17
 ```
 
-Default local endpoints:
+Jenkins URL: `http://localhost:8080`
 
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:5000`
-
-## Test Commands
-
-### Frontend
+### 4.2 Start SonarQube
 
 ```bash
-cd client
-CI=true npm test -- --coverage --runInBand
+docker run -d \
+  --name sonar \
+  --restart unless-stopped \
+  -p 9000:9000 \
+  --network devsecops-net \
+  sonarqube:lts-community
 ```
 
-### Backend
+SonarQube URL: `http://localhost:9000`
 
-```bash
-cd api
-npm test -- --coverage
+## 5. Required Jenkins Configuration
+
+### 5.1 Plugins
+
+- Git plugin
+- Pipeline
+- NodeJS
+- SonarQube Scanner for Jenkins
+- Credentials Binding
+
+### 5.2 Tools
+
+Set these exact names in `Manage Jenkins -> Tools`:
+
+- NodeJS: `nodejs23`
+- SonarScanner: `sonar-scanner`
+
+### 5.3 Credentials
+
+At minimum, create:
+
+- Sonar token (`Secret text`) id: `sonar-token`
+
+### 5.4 SonarQube Server in Jenkins
+
+In `Manage Jenkins -> System`, add SonarQube server:
+
+- Name: `sonar`
+- URL: `http://<sonarqube-host>:9000`
+- Token credential: `sonar-token`
+
+### 5.5 SonarQube Webhook
+
+Add this webhook in SonarQube:
+
+```text
+http://<jenkins-host>/sonarqube-webhook/
 ```
 
-## Jenkins Pipeline (Current)
+## 6. Current Jenkinsfile_CI Flow (As-Is)
 
-Pipeline file: `Jenkinsfile_CI`
-
-Current stage flow:
+Current stages in `Jenkinsfile_CI`:
 
 1. Git Checkout
 2. Frontend Compilation (`node --check`)
@@ -94,28 +136,65 @@ Current stage flow:
 6. Quality Gate Check
 7. Trivy FS Scan
 
-### Jenkins Tools and Credentials
+Notes:
 
-Configure these names in Jenkins:
+- Checkout currently uses fixed `main` branch and repository URL.
+- Current Sonar scanner params in pipeline:
+  - `sonar.projectName=NodeJS-Project`
+  - `sonar.projectKey=Nodejs-Project`
 
-- NodeJS tool: `nodejs23`
-- SonarScanner tool: `sonar-scanner`
-- SonarQube server name: `sonar`
-- Sonar token credential id: `sonar-token`
+## 7. Optional Local Validation Before CI
 
-## SonarQube Setup Notes
+### Start backend
 
-- Run SonarQube container on port `9000`.
-- Set Jenkins SonarQube server name to `sonar`.
-- Configure Sonar webhook:
-
-```text
-http://<jenkins-host>/sonarqube-webhook/
+```bash
+cd api
+npm install
+npm start
 ```
 
-## Frontend Testing Note (Jest + Axios)
+### Start frontend
 
-The client uses this Jest config in `client/package.json` to avoid Axios ESM transform issues in CRA/Jest:
+```bash
+cd client
+npm install
+npm start
+```
+
+### Run unit tests
+
+Frontend:
+
+```bash
+cd client
+CI=true npm test -- --coverage --runInBand
+```
+
+Backend:
+
+```bash
+cd api
+npm test -- --coverage
+```
+
+## 8. Run the CI Pipeline
+
+1. Create a new Pipeline job in Jenkins.
+2. Connect this repository as SCM.
+3. Use script path: `Project-01-node-react-mysql-devsecops/Jenkinsfile_CI`.
+4. Click Build Now.
+5. Verify each stage in order.
+
+Expected service URLs:
+
+- Jenkins: `http://localhost:8080`
+- SonarQube: `http://localhost:9000`
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:5000`
+
+## 9. Test Note (Jest + Axios)
+
+To avoid Axios ESM transform issues in CRA/Jest, the client uses this in `client/package.json`:
 
 ```json
 "jest": {
@@ -125,19 +204,10 @@ The client uses this Jest config in `client/package.json` to avoid Axios ESM tra
 }
 ```
 
-## Implemented Unit Tests
+## 10. Implemented Unit Tests
 
-- Frontend route guard test: `client/src/AlwaysPass.test.js`
+- Frontend route-guard test: `client/src/AlwaysPass.test.js`
 - Backend auth middleware test: `api/middleware/auth.test.js`
-
-## MySQL Setup
-
-Use `mysql-setup.md` for SQL and setup steps.
-
-Key DB objects:
-
-- Database: `crud_app`
-- Table: `users`
 
 ## Screenshots
 

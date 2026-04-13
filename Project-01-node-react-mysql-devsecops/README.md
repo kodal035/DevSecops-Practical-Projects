@@ -1,4 +1,5 @@
-# PROJECT-1: DevSecOps Starter Project
+# PROJECT-1: DevSecOps Starter Project - "node-react-mysql-devsecops"
+
 
 PROJECT-1 is a beginner-friendly DevSecOps sample application built around a simple 3-tier architecture. It combines a Node.js API, a React frontend, a MySQL database, and a Jenkins pipeline with security checks.
 

@@ -79,11 +79,9 @@ pipeline {
             steps {
                 sh '''
                     cd PROJECT-1/api
-                    nohup npm start > api.log 2>&1 &
-                '''
-                sh '''
+                    npm start
                     cd PROJECT-1/client
-                    nohup npm start > client.log 2>&1 &
+                    npm start
                 '''
             }
         }

@@ -147,13 +147,37 @@ Project screenshots are under `pictures/`.
 
 ![Main Page](pictures/main_page.png)
 
+### Frontend - Login/Register View 1
+
+![Frontend View 1](pictures/screencapture-localhost-3000-2026-04-13-20_50_40.png)
+
+### Frontend - Login/Register View 2
+
+![Frontend View 2](pictures/screencapture-localhost-3000-2026-04-13-20_51_38.png)
+
+### Frontend - Dashboard
+
+![Frontend Dashboard](pictures/screencapture-localhost-3000-dashboard-2026-04-13-20_52_23.png)
+
 ### Jenkins Pipeline
 
 ![Jenkins Pipeline](pictures/screencapture-localhost-8080-job-pipe1-2026-04-13-21_06_55.png)
 
+### Jenkins Console Output
+
+![Jenkins Console](pictures/screencapture-localhost-8080-job-pipe1-6-console-2026-04-13-20_11_05.png)
+
+### SonarQube Webhook Settings
+
+![SonarQube Webhooks](pictures/screencapture-localhost-9000-admin-webhooks-2026-04-13-21_07_24.png)
+
 ### SonarQube Dashboard
 
 ![SonarQube Dashboard](pictures/screencapture-localhost-9000-dashboard-2026-04-14-00_48_09.png)
+
+### SonarQube Projects
+
+![SonarQube Projects](pictures/screencapture-localhost-9000-projects-2026-04-13-21_07_44.png)
 
 ## Notes
 

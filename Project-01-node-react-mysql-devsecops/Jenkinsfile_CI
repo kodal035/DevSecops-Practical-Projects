@@ -45,6 +45,14 @@ pipeline {
             }
         }
 
+        stage('Backend Unit Tests') {
+            steps {
+                dir('Project-01-node-react-mysql-devsecops/api') {
+                    sh 'npm test'
+                }
+            }
+        }
+
         stage('Frontend Compilation') {
             steps {
                 dir('Project-01-node-react-mysql-devsecops/client') {

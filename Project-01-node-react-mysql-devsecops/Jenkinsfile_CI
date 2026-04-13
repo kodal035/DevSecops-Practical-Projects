@@ -10,15 +10,44 @@ pipeline {
     }
 
     stages {
+
         stage('Git Checkout') {
             steps {
-                checkout scmGit(branches: [[name: 'main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-token', url: 'https://github.com/kodal035/DevSecops-Practical-Projects.git']])
+                checkout scmGit(
+                    branches: [[name: 'main']],
+                    extensions: [],
+                    userRemoteConfigs: [[
+                        credentialsId: 'github-token',
+                        url: 'https://github.com/kodal035/DevSecops-Practical-Projects.git'
+                    ]]
+                )
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    cd Project-01-node-react-mysql-devsecops/api
+                    npm install
+                '''
+                sh '''
+                    cd Project-01-node-react-mysql-devsecops/client
+                    npm install
+                '''
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('Project-01-node-react-mysql-devsecops/client') {
+                    sh 'CI=true npm test -- --runInBand'
+                }
             }
         }
 
         stage('Frontend Compilation') {
             steps {
-                dir('PROJECT-1/client') {
+                dir('Project-01-node-react-mysql-devsecops/client') {
                     sh 'find . -name "*.js" -exec node --check {} +'
                 }
             }
@@ -26,7 +55,7 @@ pipeline {
 
         stage('Backend Compilation') {
             steps {
-                dir('PROJECT-1/api') {
+                dir('Project-01-node-react-mysql-devsecops/api') {
                     sh 'find . -name "*.js" -exec node --check {} +'
                 }
             }
@@ -34,25 +63,10 @@ pipeline {
 
         stage('Gitleaks Scan') {
             steps {
-                sh 'gitleaks detect --source ./PROJECT-1/client --exit-code 1'
-                sh 'gitleaks detect --source ./PROJECT-1/api --exit-code 1'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar-projectName-Nodejs-Project \
-                            -Dsonar.projectKey=Nodejs-Project'''
-                }
-            }
-        }
-
-        stage('Quality Gate Check') {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
-                }
+                sh '''
+                    gitleaks detect --source Project-01-node-react-mysql-devsecops/client --exit-code 1
+                    gitleaks detect --source Project-01-node-react-mysql-devsecops/api --exit-code 1
+                '''
             }
         }
 
@@ -62,28 +76,43 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('SonarQube Analysis') {
             steps {
-                sh '''
-                    cd PROJECT-1/api
-                    npm install
-                '''
-                sh '''
-                    cd PROJECT-1/client
-                    npm install
-                '''
+                withSonarQubeEnv('sonar') {
+                    sh """
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectKey=Nodejs-Project \
+                        -Dsonar.projectName=Nodejs-Project \
+                        -Dsonar.sources=.
+                    """
+                }
             }
         }
 
-        stage('Run Application') {
+        stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build Artifact (Optional)') {
             steps {
                 sh '''
-                    cd PROJECT-1/api
-                    npm start
-                    cd PROJECT-1/client
-                    npm start
+                    cd Project-01-node-react-mysql-devsecops/api
+                    npm pack
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo "CI Pipeline Success ✅"
+        }
+        failure {
+            echo "CI Pipeline Failed ❌"
         }
     }
 }

@@ -3,3 +3,8 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+
+// Mock react-router-dom to prevent module resolution errors in tests
+jest.mock('react-router-dom', () => ({
+  Navigate: ({ to }) => <div data-testid="navigate">{to}</div>,
+}));

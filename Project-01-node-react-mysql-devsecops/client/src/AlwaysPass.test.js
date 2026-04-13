@@ -3,10 +3,6 @@ import { render, screen } from '@testing-library/react';
 import ProtectedRoute from './ProtectedRoute';
 import { AuthContext } from './context/AuthContext';
 
-jest.mock('react-router-dom', () => ({
-  Navigate: ({ to }) => <div data-testid="navigate">{to}</div>,
-}));
-
 const renderProtectedRoute = (user) => {
   render(
     <AuthContext.Provider value={{ user }}>

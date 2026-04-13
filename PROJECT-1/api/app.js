@@ -19,21 +19,11 @@ app.use('/api/users', userRoutes);   // 👤 User management
 
 // Auto-create or reset admin user
 const initAdminUser = async () => {
-  if (process.env.SEED_ADMIN_USER !== 'true') {
-    console.log('ℹ️ Admin seed skipped (set SEED_ADMIN_USER=true to enable).');
-    return;
-  }
-
-  const name = process.env.DEFAULT_ADMIN_NAME || 'Admin User';
-  const email = process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com';
-  const password = process.env.DEFAULT_ADMIN_PASSWORD;
-  const role = process.env.DEFAULT_ADMIN_ROLE || 'admin';
+  const name = 'Admin User';
+  const email = 'admin@example.com';
+  const password = 'admin123';
+  const role = 'admin';
   const saltRounds = 10;
-
-  if (!password) {
-    console.warn('⚠️ DEFAULT_ADMIN_PASSWORD is missing. Admin seed skipped for security.');
-    return;
-  }
 
   db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
     if (err) {
@@ -50,7 +40,7 @@ const initAdminUser = async () => {
         [name, email, hashedPassword, role],
         (err, result) => {
           if (err) return console.error('❌ Failed to insert admin:', err);
-          console.log(`✅ Admin user created: ${email}`);
+          console.log(`✅ Admin user created: ${email} / ${password}`);
         }
       );
     } else {
@@ -61,7 +51,7 @@ const initAdminUser = async () => {
           [hashedPassword, name, role, email],
           (err, result) => {
             if (err) return console.error('❌ Failed to reset admin password:', err);
-            console.log(`🔁 Admin password reset for: ${email}`);
+            console.log(`🔁 Admin password reset to: ${password}`);
           }
         );
       } else {

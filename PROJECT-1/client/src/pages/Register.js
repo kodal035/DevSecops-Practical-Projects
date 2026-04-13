@@ -17,7 +17,7 @@ function Register() {
       await register(form.name, form.email, form.password);
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || err.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed');
     }
   };
 

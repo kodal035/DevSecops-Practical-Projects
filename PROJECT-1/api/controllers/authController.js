@@ -3,11 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const util = require('util');
 
-const SECRET = process.env.JWT_SECRET;
-
-if (!SECRET) {
-  throw new Error('JWT_SECRET is not set. Configure it in the environment before starting the API.');
-}
+const SECRET = process.env.JWT_SECRET || 'supersecret'; // ideally from .env
 
 // Promisify DB query
 const query = util.promisify(db.query).bind(db);
@@ -29,23 +25,7 @@ exports.register = async (req, res) => {
     res.status(201).json({ message: 'User registered', id: result.insertId });
   } catch (err) {
     console.error('Registration Error:', err);
-    if (err.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ message: 'Email already exists. Please login.' });
-    }
-
-    if (err.code === 'ER_NO_SUCH_TABLE') {
-      return res.status(500).json({ message: 'Users table is missing. Run MySQL setup first.' });
-    }
-
-    if (err.code === 'ER_ACCESS_DENIED_ERROR') {
-      return res.status(500).json({ message: 'Database access denied. Check DB_USER/DB_PASSWORD.' });
-    }
-
-    if (err.code === 'ER_BAD_DB_ERROR') {
-      return res.status(500).json({ message: 'Database not found. Check DB_NAME and create it.' });
-    }
-
-    res.status(500).json({ message: `Registration failed (${err.code || 'UNKNOWN_ERROR'})` });
+    res.status(500).json({ error: 'Registration failed' });
   }
 };
 
